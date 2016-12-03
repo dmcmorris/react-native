@@ -15,12 +15,13 @@
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
-#import "RCTBridge.h"
-#import "RCTBridge+Private.h"
-#import "RCTBridgeModule.h"
-#import "RCTUtils.h"
-#import "RCTUIManager.h"
-#import "RCTViewManager.h"
+#import <React/RCTBridge+Private.h>
+#import <React/RCTBridge.h>
+#import <React/RCTBridgeModule.h>
+#import <React/RCTJavaScriptExecutor.h>
+#import <React/RCTUIManager.h>
+#import <React/RCTUtils.h>
+#import <React/RCTViewManager.h>
 
 #define RUN_RUNLOOP_WHILE(CONDITION) \
 { \
@@ -41,10 +42,15 @@
 
 RCT_EXPORT_MODULE()
 
-- (NSArray<NSString *> *)customDirectEventTypes
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
+
+- (NSArray<NSString *> *)customBubblingEventTypes
 {
   return @[@"foo"];
 }
+
+#pragma clang diagnostic pop
 
 @end
 
@@ -94,7 +100,8 @@ RCT_EXPORT_MODULE()
 
 - (NSURL *)sourceURLForBridge:(__unused RCTBridge *)bridge
 {
-  return nil;
+  NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+  return [bundle URLForResource:@"TestBundle" withExtension:@"js"];
 }
 
 - (NSArray *)extraModulesForBridge:(__unused RCTBridge *)bridge

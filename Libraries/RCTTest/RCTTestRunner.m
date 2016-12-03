@@ -9,16 +9,17 @@
 
 #import "RCTTestRunner.h"
 
-#import "FBSnapshotTestController.h"
-#import "RCTAssert.h"
-#import "RCTLog.h"
-#import "RCTRootView.h"
-#import "RCTTestModule.h"
-#import "RCTUtils.h"
-#import "RCTJSCExecutor.h"
-#import "RCTBridge+Private.h"
+#import <React/RCTAssert.h>
+#import <React/RCTBridge+Private.h>
+#import <React/RCTJSCExecutor.h>
+#import <React/RCTLog.h>
+#import <React/RCTRootView.h>
+#import <React/RCTUtils.h>
 
-static const NSTimeInterval kTestTimeoutSeconds = 60;
+#import "FBSnapshotTestController.h"
+#import "RCTTestModule.h"
+
+static const NSTimeInterval kTestTimeoutSeconds = 120;
 static const NSTimeInterval kTestTeardownTimeoutSeconds = 30;
 
 @implementation RCTTestRunner
@@ -45,12 +46,12 @@ static const NSTimeInterval kTestTeardownTimeoutSeconds = 30;
     _testController.referenceImagesDirectory = referenceDirectory;
     _moduleProvider = [block copy];
 
-#if RUNNING_ON_CI
-    _scriptURL = [[NSBundle bundleForClass:[RCTBridge class]] URLForResource:@"main" withExtension:@"jsbundle"];
-    RCTAssert(_scriptURL != nil, @"Could not locate main.jsBundle");
-#else
-    _scriptURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://localhost:8081/%@.bundle?platform=ios&dev=true", app]];
-#endif
+    if (getenv("CI_USE_PACKAGER")) {
+      _scriptURL = [NSURL URLWithString:[NSString stringWithFormat:@"http://localhost:8081/%@.bundle?platform=ios&dev=true", app]];
+    } else {
+      _scriptURL = [[NSBundle bundleForClass:[RCTBridge class]] URLForResource:@"main" withExtension:@"jsbundle"];
+    }
+    RCTAssert(_scriptURL != nil, @"No scriptURL set");
   }
   return self;
 }
@@ -117,6 +118,7 @@ expectErrorBlock:(BOOL(^)(NSString *error))expectErrorBlock
     RCTAssert(_testController != nil, @"_testController should not be nil");
     testModule.controller = _testController;
     testModule.testSelector = test;
+    testModule.testSuffix = _testSuffix;
     testModule.view = rootView;
 
     UIViewController *vc = [UIApplication sharedApplication].delegate.window.rootViewController;

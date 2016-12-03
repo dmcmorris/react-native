@@ -3,15 +3,13 @@ https://github.com/facebook/react-native/releases
 
 ## Release schedule
 
-| Version | RC release       | Stable release |
-| ------- | ---------------- | -------------- |
-| 0.22.0  | week of Mar 7    | Mar 21         |
-| 0.23.0  | week of Mar 21   | Apr 4          |
-| 0.24.0  | week of Apr 4    | Apr 18         |
-| 0.25.0  | week of Apr 18   | May 2          |
-| 0.26.0  | week of May 2    | May 16         |
-| 0.27.0  | week of May 16   | May 30         |
-| ...     | ...              | ...            |
+| Version | RC release          | Stable release |
+| ------- | ------------------- | -------------- |
+| 0.38.0  | week of November 7  | November 21    |
+| 0.39.0  | week of November 21 | December 2     |
+| 0.40.0  | 1st of December     | 1st of January |
+| 0.41.0  | 1st of January      | 1st of February|
+| ...     | ...                 | ...            |
 
 -------------------
 ## How to cut a new release branch
@@ -28,7 +26,7 @@ Before cutting a release branch, make sure CI systems [Travis](https://travis-ci
 
 Before executing the following script, make sure you have:
 - An Android emulator / Genymotion device running
-- No packager running in any of the projects 
+- No packager running in any of the projects
 
 ```bash
 ./scripts/test-manual-e2e.sh
@@ -43,14 +41,11 @@ After `npm install` completes, the script prints a set of manual checks you have
 Run:
 
 ```bash
-git checkout -b <version_you_are_releasing>-stable 
+git checkout -b <version_you_are_releasing>-stable
 # e.g. git checkout -b 0.22-stable
 
-node ./scripts/bump-oss-version.js <exact-version_you_are_releasing> 
+node ./scripts/bump-oss-version.js <exact-version_you_are_releasing>
 # e.g. node ./scripts/bump-oss-version.js 0.22.0-rc
-
-git push origin <version_you_are_releasing>-stable --tags
-# e.g. git push origin 0.22-stable --tags
 ```
 
 Circle CI will automatically run the tests and publish to npm with the version you have specified (e.g `0.22.0-rc`) and tag `next` meaning that this version will not be installed for users by default.
@@ -68,7 +63,7 @@ https://github.com/facebook/react-native/compare/0.21-stable...0.22-stable
 
 **Note**: This only shows **250** commits, if there are more use git.
 
-When making a list of changes, ignore docs, showcase updates and minor typos. 
+When making a list of changes, ignore docs, showcase updates and minor typos.
 
 Sometimes commit messages might be really short / confusing - try rewording them where it makes sense. Below are few examples:
 - `Fix logging reported by RUN_JS_BUNDLE` -> `Fix systrace logging of RUN_JS_BUNDLE event`
@@ -78,19 +73,25 @@ Before posting the list of changes, consider asking one of contributors for thei
 
 **Important**: For release candiate releases, make sure to check "This is a pre-release"
 
+#### Update `Breaking Changes` document
+
+Once the release is cut, go to the [page](https://github.com/facebook/react-native/wiki/Breaking-Changes) where all breaking changes are listed and create section for the release. Don't forget to move all breaking changes from `master` that are now part of the release.
+
+When finished and there are breaking changes, include them in the release notes you just created.
+
 #### Tweet about the rc release
 
 Tweet about it! Link to release notes and say "please report issues" and link to the master issue to track bugs you created.
 
-## IMPORTANT: Track bug reports from the community during the following two weeks, ping owners to get them fixed
+## IMPORTANT: Track bug reports from the community during the following month, ping owners to get them fixed
 
 A good way to do this is to create a github issue and post about it so people can report bugs. Examples: [#6087](https://github.com/facebook/react-native/issues/6087), [#5201](https://github.com/facebook/react-native/issues/5201)
 
-**Only cherry-pick small and non-risky bug fixes**. **Don't pick new features into the release** as this greatly increases the risk of something breaking. The main point of the RC is to let people to use it for two weeks and fix the most serious bugs.
+**Only cherry-pick small and non-risky bug fixes**. **Don't pick new features into the release** as this greatly increases the risk of something breaking. The main point of the RC is to let people to use it for a month and fix the most serious bugs.
 
 -------------------
 
-## How to release an RC update (e.g. 0.22.0-rc1, 0.22.0-rc2)
+## How to release an RC update (e.g. 0.28.0-rc.1, 0.28.0-rc.2)
 
 After cherry-picking 1-2 bug fixes, it is a good idea to do a new RC release so that people can test again. Having a few RC releases can also help people bisect in case we cherry-pick a bad commit by mistake.
 
@@ -111,18 +112,15 @@ git cherry-pick commitHash1
 If everything worked:
 
 ```bash
-node ./scripts/bump-oss-version.js <exact_version_you_are_releasing> 
-# e.g. node ./scripts/bump-oss-version.js 0.22.0-rc1
-
-git push origin version_you_are_releasing-stable --tags 
-# e.g. git push origin 0.22-stable --tags
+node ./scripts/bump-oss-version.js <exact_version_you_are_releasing>
+# e.g. node ./scripts/bump-oss-version.js 0.28.0-rc.1
 ````
 
 -------------------
 
 ## How to do the final release (e.g. 0.22.0, 0.22.1)
 
-Roughly two weeks after the branch cut (see the release schedule above) it's time to promote the last RC to a real release.
+Roughly a month after the branch cut (see the release schedule above) it's time to promote the last RC to a real release.
 
 Once all bugfixes have been cherry-picked and you're sure the release is solid (example: [#6087](https://github.com/facebook/react-native/issues/6087)), do the release:
 
@@ -143,17 +141,8 @@ git cherry-pick commitHash1
 If everything worked:
 
 ```bash
-node ./scripts/bump-oss-version.js <exact_version_you_are_releasing> 
+node ./scripts/bump-oss-version.js <exact_version_you_are_releasing>
 # e.g. node ./scripts/bump-oss-version.js 0.22.0
-
-git tag -d latest
-git push origin :latest
-
-git tag latest 
-# The latest tag marks when to regenerate the website.
-
-git push origin version_you_are_releasing-stable --tags  
-# e.g. git push origin 0.22-stable --tags
 ```
 
 #### Update the release notes

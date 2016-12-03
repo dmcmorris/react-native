@@ -16,10 +16,11 @@
 #import <XCTest/XCTest.h>
 
 #import <OCMock/OCMock.h>
-#import "RCTEventDispatcher.h"
-#import "RCTBridge+Private.h"
 
-@interface RCTTestEvent : NSObject  <RCTEvent>
+#import <React/RCTBridge+Private.h>
+#import <React/RCTEventDispatcher.h>
+
+@interface RCTTestEvent : NSObject <RCTEvent>
 @property (atomic, assign, readwrite) BOOL canCoalesce;
 @end
 
@@ -54,7 +55,7 @@
 
 + (NSString *)moduleDotMethod
 {
-  return @"RCTDeviceEventEmitter.emit";
+  return @"MyCustomEventemitter.emit";
 }
 
 - (NSArray *)arguments
@@ -100,10 +101,15 @@
 
 - (void)testLegacyEventsAreImmediatelyDispatched
 {
-  [[_bridge expect] enqueueJSCall:_JSMethod
-                             args:[_testEvent arguments]];
+  [[_bridge expect] enqueueJSCall:@"RCTDeviceEventEmitter"
+                           method:@"emit"
+                             args:[_testEvent arguments]
+                       completion:NULL];
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
   [_eventDispatcher sendDeviceEventWithName:_eventName body:_body];
+#pragma clang diagnostic pop
 
   [_bridge verify];
 }
@@ -151,9 +157,8 @@
   [_eventDispatcher sendEvent:_testEvent];
   [_bridge verify];
 
-
   // eventsEmittingBlock would be called when js is no longer busy, which will result in emitting events
-  [[_bridge expect] enqueueJSCall:@"RCTDeviceEventEmitter.emit"
+  [[_bridge expect] enqueueJSCall:[[_testEvent class] moduleDotMethod]
                              args:[_testEvent arguments]];
   eventsEmittingBlock();
   [_bridge verify];
@@ -171,7 +176,7 @@
     eventsEmittingBlock = block;
     return YES;
   }] queue:RCTJSThread];
-  [[_bridge expect] enqueueJSCall:@"RCTDeviceEventEmitter.emit"
+  [[_bridge expect] enqueueJSCall:[[_testEvent class] moduleDotMethod]
                              args:[_testEvent arguments]];
 
   RCTTestEvent *ignoredEvent = [[RCTTestEvent alloc] initWithViewTag:nil
@@ -198,9 +203,9 @@
     eventsEmittingBlock = block;
     return YES;
   }] queue:RCTJSThread];
-  [[_bridge expect] enqueueJSCall:@"RCTDeviceEventEmitter.emit"
+  [[_bridge expect] enqueueJSCall:[[_testEvent class] moduleDotMethod]
                              args:[firstEvent arguments]];
-  [[_bridge expect] enqueueJSCall:@"RCTDeviceEventEmitter.emit"
+  [[_bridge expect] enqueueJSCall:[[_testEvent class] moduleDotMethod]
                              args:[_testEvent arguments]];
 
 
@@ -228,9 +233,9 @@
     eventsEmittingBlock = block;
     return YES;
   }] queue:RCTJSThread];
-  [[_bridge expect] enqueueJSCall:@"RCTDeviceEventEmitter.emit"
+  [[_bridge expect] enqueueJSCall:[[_testEvent class] moduleDotMethod]
                              args:[firstEvent arguments]];
-  [[_bridge expect] enqueueJSCall:@"RCTDeviceEventEmitter.emit"
+  [[_bridge expect] enqueueJSCall:[[_testEvent class] moduleDotMethod]
                              args:[secondEvent arguments]];
 
 
